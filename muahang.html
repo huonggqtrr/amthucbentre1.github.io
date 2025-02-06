@@ -1,0 +1,394 @@
+ <!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt Hàng và Thanh Toán</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+      <style>
+       /* Container cho menu và các phần tử bổ sung */
+.navbar-menu-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: black;
+    padding: 10px 20px;
+    z-index: 90;
+    position: relative;
+}
+
+.navbar-menu {
+    display: flex;
+}
+
+.navbar-menu a {
+    text-decoration: none;
+    color: gold;
+    font-size: 18px;
+    margin: 0 20px;
+    transition: 0.3s;
+}
+
+.navbar-menu a:hover {
+    color: white;
+}
+
+.navbar-extras {
+    display: flex;
+    align-items: center;
+}
+
+.cart-icon {
+    background-color: transparent;
+    border: none;
+    color: gold;
+    font-size: 24px;
+    cursor: pointer;
+    margin-right: 20px;
+}
+
+.search-bar {
+    padding: 5px 10px;
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+.search-icon {
+    background-color: transparent;
+    border: none;
+    color: gold;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+
+        /* Cải thiện button Trang Chủ */
+        .home-button {
+            padding: 12px 24px;
+            font-size: 18px;
+            border: none;
+            background-color: #FFD700;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000; /* Đảm bảo nút ở trên cùng */
+        }
+        .home-button:hover {
+            background-color: #ffcc00;
+        }
+
+        /* Các kiểu khác của trang */
+     /* Các kiểu khác của trang */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+        }
+        header {
+            background-color: #333;
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+
+       /* Cập nhật .product-list để sắp xếp sản phẩm thành 3 cột */
+.product-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between; /* Căn đều giữa các sản phẩm */
+    margin: 20px;
+}
+
+/* Cập nhật .product để mỗi sản phẩm chiếm 1/3 chiều rộng */
+.product {
+    width: 30%; /* Mỗi sản phẩm chiếm 1/3 chiều rộng */
+    margin-bottom: 20px; /* Khoảng cách giữa các sản phẩm */
+    box-sizing: border-box; /* Đảm bảo tính toán bao gồm padding và border */
+    text-align: center; /* Canh giữa nội dung trong sản phẩm */
+}
+
+/* Giảm kích thước hình ảnh trong sản phẩm */
+.product img {
+    width: 100%; /* Đảm bảo hình ảnh chiếm toàn bộ chiều rộng của phần tử cha */
+    height: auto;
+    object-fit: cover;
+    margin-bottom: 10px; /* Khoảng cách giữa hình ảnh và tên sản phẩm */
+}
+
+/* Áp dụng hiệu ứng slide-up */
+@keyframes slideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px); /* Bắt đầu từ dưới */
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0); /* Kết thúc tại vị trí ban đầu */
+    }
+}
+
+/* Thêm độ trễ cho từng sản phẩm để tạo hiệu ứng xuất hiện từ từ */
+.product:nth-child(1) {
+    animation-delay: 0.2s;
+}
+
+.product:nth-child(2) {
+    animation-delay: 0.4s;
+}
+
+.product:nth-child(3) {
+    animation-delay: 0.6s;
+}
+
+
+        /* Hiệu ứng bay vào giỏ */
+.flying-item {
+    position: absolute;
+    z-index: 100;
+    transition: transform 1s ease, opacity 1s ease;
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* Hiệu ứng thu nhỏ ảnh khi thêm vào giỏ */
+.product img {
+    transition: transform 0.5s ease;
+    width: 100%; /* Đảm bảo hình ảnh chiếm toàn bộ chiều rộng của phần tử cha */
+    height: auto; /* Giữ tỷ lệ hình ảnh */
+    object-fit: cover; /* Giúp hình ảnh chiếm toàn bộ không gian mà không bị méo */
+}
+
+
+/* Hiệu ứng bay vào giỏ */
+@keyframes shrinkAndFly {
+    0% {
+        transform: scale(1); /* Ban đầu ảnh full size */
+        opacity: 1;
+    }
+    50% {
+        transform: scale(0.5); /* Thu nhỏ ảnh khi bay vào giỏ */
+    }
+    100% {
+        transform: scale(0.3) translateX(300px) translateY(-150px); /* Di chuyển tới giỏ hàng */
+        opacity: 0;
+    }
+}
+
+.add-to-cart.shrink {
+    animation: shrinkAndFly 1s ease forwards;
+}
+
+/* Hiển thị giỏ hàng */
+.cart {
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin: 20px;
+    padding: 20px;
+    border-radius: 8px;
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    width: 300px;
+    display: none; /* Ẩn giỏ hàng ban đầu */
+}
+
+
+        .cart h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .cart-items {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .cart-items li {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .cart-items .item-name {
+            font-size: 16px;
+        }
+
+        .cart-items .item-price {
+            font-size: 16px;
+            color: #FF6347;
+        }
+
+        .cart-total {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .checkout-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 4px;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .checkout-btn:hover {
+            background-color: #218838;
+        }
+
+        .customer-info {
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none; /* Ẩn thông tin khách hàng ban đầu */
+        }
+
+        .customer-info input,
+        .customer-info textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+
+        .customer-info label {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Menu ở góc trên -->
+    <div class="navbar-menu-container">
+        <div class="navbar-menu">
+            <a href="indexnhap.html">Trang Chủ</a>
+            <a href="nhap1.html">Món Ăn Và Công Thức</a>
+            <a href="muahang.html">Mua Hàng</a>
+            <a href="#">Liên Hệ</a>
+        </div>
+        
+        <div class="navbar-extras">
+            <button class="cart-icon" onclick="toggleCart()">
+                <i class="fa fa-shopping-cart"></i>
+            </button>
+            <input type="text" class="search-bar" id="search-input" placeholder="Tìm kiếm sản phẩm..." oninput="searchProducts()">
+            <button class="search-icon">
+                <i class="fa fa-search"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="product-list">
+        <div class="product" id="product-1">
+            <img src="images/keodua.jpg" alt="Sản phẩm 1">
+            <div class="name">Kẹo Dừa</div>
+            <div class="price">200,000 VND</div>
+            <input type="number" id="quantity-1" value="1" min="1" class="quantity" />
+            <button class="add-to-cart" onclick="addToCart('Sản Phẩm 1', 200000, document.getElementById('quantity-1').value, event)">Thêm vào giỏ</button>
+
+        </div>
+
+        <div class="product" id="product-2">
+            <img src="images/" alt="Sản phẩm 2">
+            <div class="name">Sản Phẩm 2</div>
+            <div class="price">350,000 VND</div>
+            <input type="number" id="quantity-2" value="1" min="1" class="quantity" />
+            <button class="add-to-cart" onclick="addToCart('Sản Phẩm 2', 350000, document.getElementById('quantity-2').value)">Thêm vào giỏ</button>
+        </div>
+
+        <div class="product" id="product-3">
+            <img src="https://via.placeholder.com/200x150" alt="Sản phẩm 3">
+            <div class="name">Sản Phẩm 3</div>
+            <div class="price">150,000 VND</div>
+            <input type="number" id="quantity-3" value="1" min="1" class="quantity" />
+            <button class="add-to-cart" onclick="addToCart('Sản Phẩm 3', 150000, document.getElementById('quantity-3').value)">Thêm vào giỏ</button>
+        </div>
+    </div>
+
+    <script>
+    let cart = []; // Giỏ hàng để lưu các sản phẩm đã thêm vào
+
+    // Hàm thêm sản phẩm vào giỏ
+    function addToCart(productName, productPrice, quantity, event) {
+        const quantityInt = parseInt(quantity);
+        if (isNaN(quantityInt) || quantityInt <= 0) {
+            alert('Vui lòng nhập số lượng hợp lệ.');
+            return;
+        }
+
+        const product = {
+            name: productName,
+            price: productPrice,
+            quantity: quantityInt,
+        };
+
+        cart.push(product);
+        updateCart();
+
+        // Hiệu ứng bay vào giỏ
+        let productImage = event.target.closest('.product').querySelector('img');
+        let flyingItem = document.createElement('div');
+        flyingItem.classList.add('flying-item');
+        flyingItem.style.left = productImage.offsetLeft + 'px';
+        flyingItem.style.top = productImage.offsetTop + 'px';
+        flyingItem.innerHTML = `<img src="${productImage.src}" alt="${productName}" width="50" height="50" />`;
+        document.body.appendChild(flyingItem);
+
+        // Lấy vị trí giỏ hàng
+        let cartIcon = document.querySelector('.cart-icon');
+        let cartPosition = cartIcon.getBoundingClientRect();
+
+        // Tạo hiệu ứng bay vào giỏ
+        setTimeout(() => {
+            flyingItem.classList.add('shrink'); // Thêm class để áp dụng hiệu ứng thu nhỏ và bay vào giỏ
+            flyingItem.style.left = cartPosition.left + 'px';
+            flyingItem.style.top = cartPosition.top + 'px';
+        }, 10);
+
+        // Sau khi bay vào giỏ, xóa phần tử flying-item đi
+        setTimeout(() => {
+            flyingItem.remove();
+        }, 1000);
+    }
+
+    // Cập nhật giỏ hàng
+    function updateCart() {
+        const cartItems = document.getElementById('cart-items');
+        const cartTotal = document.getElementById('cart-total');
+
+        cartItems.innerHTML = '';
+        let total = 0;
+
+        cart.forEach(item => {
+            let listItem = document.createElement('li');
+            listItem.innerHTML = `${item.name} x ${item.quantity} - ${item.price * item.quantity} VND`;
+            cartItems.appendChild(listItem);
+            total += item.price * item.quantity;
+        });
+
+        cartTotal.innerHTML = `Tổng: ${total} VND`;
+    }
+
+    // Toggle giỏ hàng
+    function toggleCart() {
+        const cartElement = document.querySelector('.cart');
+        cartElement.style.display = cartElement.style.display === 'none' ? 'block' : 'none';
+    }
+</script>
+
+</body>
+</html>
